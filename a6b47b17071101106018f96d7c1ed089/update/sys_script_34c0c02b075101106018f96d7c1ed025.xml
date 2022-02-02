@@ -27,21 +27,43 @@
         <rest_service_text/>
         <rest_variables/>
         <role_conditions/>
-        <script><![CDATA[(function executeRule(current, previous /*null when async*/) {
+        <script><![CDATA[(function executeRule(current, previous /*null when async*/ ) {
 
-	
-	//find which fields have changed
- for (var x in current){
-  if (current[x] != previous[x]) {
-  gs.addInfoMessage ('Field ' + x + ' has changed!' );
-  }
-  }
-	// read configuration from table x_27369_sacm_acl_field_lock
-	var gr = new GlideRecord('x_27369_sacm_acl_field_lock');
-	gr.query('');
-	
-	
-	
+    var arr = []; //changed fields
+    var i = 0;
+	var cu = gs.getUserID(); //current user
+	var ct = current.sys_class_name; //current table name
+	gs.addInfoMessage('Current user is ' + cu + ' Current table/class is: ' + ct);
+    //find which fields have changed
+    for (var x in current) {
+        if (current[x] != previous[x]) {
+            arr.push(x);
+          //  gs.addInfoMessage('Field ' + arr[i] + ' has changed!');
+            i = i + 1;
+
+        }
+    }
+    // read configuration from table x_27369_sacm_acl_field_lock
+    for (var n=0; n<arr.length; n++) {
+        gs.addInfoMessage('Field ' + arr[n] + ' is been checked!');
+		var gr = new GlideRecord('x_27369_sacm_acl_field_lock');
+        gr.addQuery('field_name', arr[n]);
+		//loop thru the table to find the field is available for restrictions 
+		gr.query();
+		
+		while (gr.next()){
+			var ag = gr.authorized_group; //pick up the authorized group
+			gs.addInfoMessage('field ' + arr[n] + ' has restrictions defined in configuration table. Authorized group is: ' + ag);
+			
+			
+			
+			
+		}
+		
+		
+    }
+
+
 
 })(current, previous);]]></script>
         <sys_class_name>sys_script</sys_class_name>
@@ -50,7 +72,7 @@
         <sys_domain>global</sys_domain>
         <sys_domain_path>/</sys_domain_path>
         <sys_id>34c0c02b075101106018f96d7c1ed025</sys_id>
-        <sys_mod_count>1</sys_mod_count>
+        <sys_mod_count>14</sys_mod_count>
         <sys_name>SACM ACL Lock Attribute Modification</sys_name>
         <sys_overrides/>
         <sys_package display_value="SACM ACL" source="x_27369_sacm_acl">a6b47b17071101106018f96d7c1ed089</sys_package>
@@ -58,7 +80,7 @@
         <sys_scope display_value="SACM ACL">a6b47b17071101106018f96d7c1ed089</sys_scope>
         <sys_update_name>sys_script_34c0c02b075101106018f96d7c1ed025</sys_update_name>
         <sys_updated_by>admin</sys_updated_by>
-        <sys_updated_on>2022-02-01 20:13:23</sys_updated_on>
+        <sys_updated_on>2022-02-02 17:01:39</sys_updated_on>
         <template/>
         <when>before</when>
     </sys_script>
