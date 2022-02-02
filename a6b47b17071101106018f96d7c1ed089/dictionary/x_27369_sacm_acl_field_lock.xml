@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?><database>
+    <element label="field lock" max_length="40" name="x_27369_sacm_acl_field_lock" sizeclass="1" type="collection">
+        <element attributes="encode_utf8=false" label="Authorized Group" max_length="32" name="authorized_group" reference="sys_user_group" type="reference"/>
+        <element attributes="edge_encryption_enabled=true" label="Authorized Role" max_length="400" name="authorized_role" type="string"/>
+        <element label="Description" max_length="4000" name="description" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Field Name" max_length="400" name="field_name" type="string"/>
+        <element attributes="edge_encryption_enabled=true" default="javascript:global.getNextObjNumberPadded();" label="Number" max_length="40" name="number" type="string"/>
+        <element attributes="edge_encryption_enabled=true" label="Table Name" max_length="400" name="table_name" type="string"/>
+        <index name="index">
+            <element name="authorized_group"/>
+        </index>
+    </element>
+</database>
