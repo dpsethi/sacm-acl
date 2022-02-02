@@ -31,36 +31,51 @@
 
     var arr = []; //changed fields
     var i = 0;
-	var cu = gs.getUserID(); //current user
-	var ct = current.sys_class_name; //current table name
-	gs.addInfoMessage('Current user is ' + cu + ' Current table/class is: ' + ct);
+    var cu = gs.getUserID(); //current user
+    var ct = current.sys_class_name; //current table name
+    gs.addInfoMessage('Current user is ' + cu + ' Current table/class is: ' + ct);
     //find which fields have changed
     for (var x in current) {
         if (current[x] != previous[x]) {
             arr.push(x);
-          //  gs.addInfoMessage('Field ' + arr[i] + ' has changed!');
+            //  gs.addInfoMessage('Field ' + arr[i] + ' has changed!');
             i = i + 1;
-
         }
     }
     // read configuration from table x_27369_sacm_acl_field_lock
-    for (var n=0; n<arr.length; n++) {
-        gs.addInfoMessage('Field ' + arr[n] + ' is been checked!');
-		var gr = new GlideRecord('x_27369_sacm_acl_field_lock');
+    for (var n = 0; n < arr.length; n++) {
+        gs.addInfoMessage('Field ' + arr[n] + ' is been checked! .. previous value is ' + previous[arr[n]]);
+        var gr = new GlideRecord('x_27369_sacm_acl_field_lock');
         gr.addQuery('field_name', arr[n]);
-		//loop thru the table to find the field is available for restrictions 
-		gr.query();
-		
-		while (gr.next()){
-			var ag = gr.authorized_group; //pick up the authorized group
-			gs.addInfoMessage('field ' + arr[n] + ' has restrictions defined in configuration table. Authorized group is: ' + ag);
-			
-			
-			
-			
-		}
-		
-		
+        gr.addQuery('table_name', ct);
+        //loop thru the table to find the field is available for restrictions .. each class of table need a separate entry on config table
+        //eg; restriction on field u_network_zone may need few entries for each class, cmdb_ci_server, cmdb_ci_win_server and so on..
+        gr.query();
+
+        while (gr.next()) {
+            var ag = gr.authorized_group; //pick up the authorized group
+		    gs.addInfoMessage('**ALERT**: Field ' + arr[n] + ' has restrictions defined in configuration table. Authorized group is: ' + ag + ':' + ag.name);
+            //find if current user is member of this authorized group; if not, then restrict update operation
+            var grGrpMember = new GlideRecord('sys_user_grmember');
+            grGrpMember.addQuery('user', cu);
+            grGrpMember.addQuery('group', ag);
+            grGrpMember.query();
+           // grGrpMember.next();
+            if (grGrpMember.next()) {
+                gs.addInfoMessage('User: ' + cu + ' is a member of authorized group ' + ag);
+
+            }else{
+				gs.addInfoMessage('User: ' + cu + ' is not a member of authorized group ' + ag);
+				gs.info('RESTRICTED UPDATE.. previous value is ' + previous[arr[n]]);
+				gs.addInfoMessage('UNAUTHORIZED UPDATE - REVERTING FIELD VALUE ' + arr[n] + ' back to ' + previous[arr[n]]);
+				current[arr[n]]=previous[arr[n]];
+				//current.setAbortAction(true); //abort doesnot work from scoped application .. create BR in global scope, as a workaround reverting the value back from previous variable above
+				
+			} 
+            
+        }
+
+
     }
 
 
@@ -72,7 +87,7 @@
         <sys_domain>global</sys_domain>
         <sys_domain_path>/</sys_domain_path>
         <sys_id>34c0c02b075101106018f96d7c1ed025</sys_id>
-        <sys_mod_count>14</sys_mod_count>
+        <sys_mod_count>57</sys_mod_count>
         <sys_name>SACM ACL Lock Attribute Modification</sys_name>
         <sys_overrides/>
         <sys_package display_value="SACM ACL" source="x_27369_sacm_acl">a6b47b17071101106018f96d7c1ed089</sys_package>
@@ -80,7 +95,7 @@
         <sys_scope display_value="SACM ACL">a6b47b17071101106018f96d7c1ed089</sys_scope>
         <sys_update_name>sys_script_34c0c02b075101106018f96d7c1ed025</sys_update_name>
         <sys_updated_by>admin</sys_updated_by>
-        <sys_updated_on>2022-02-02 17:01:39</sys_updated_on>
+        <sys_updated_on>2022-02-02 21:22:31</sys_updated_on>
         <template/>
         <when>before</when>
     </sys_script>
